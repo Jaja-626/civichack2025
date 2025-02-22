@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Slider</title>
+    <style>
+        .timeline-container {
+            width: 80%;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .timeline {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .15s ease-in-out;
+        }
+
+        .timeline:hover {
+            opacity: 1;
+        }
+
+        .timeline::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4CAF50; /* Dot color */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .timeline::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50; /* Dot color */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #selectedYear {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="timeline-container">
+        <input type="range" min="1900" max="2025" value="2020" step="5" class="timeline" id="yearSlider">
+        <div id="selectedYear">Year: 2020</div>
+    </div>
+
+    <script>
+        const slider = document.getElementById("yearSlider");
+        const output = document.getElementById("selectedYear");
+
+        slider.addEventListener('input', function() {
+            output.innerHTML = "Year: " + this.value;
+        });
+    </script>
+</body>
+</html>
