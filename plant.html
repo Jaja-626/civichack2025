@@ -6,6 +6,7 @@
     <title>Flora the Explorer</title>
 
     <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="plant.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link
       rel="stylesheet"
@@ -14,8 +15,11 @@
 
     <style>
       #map {
+        margin: auto;
         height: 600px;
-        width: 100%;
+        width: 60%;
+        border: solid 5px #819881;
+        border-radius:10px;
       }
       #slider-container {
         width: 80%;
@@ -25,11 +29,12 @@
       #year-range {
         margin-top: 10px;
         font-size: 16px;
+        font-family:  'Trebuchet MS';
       }
       /* 🌿 Green Slider Bar */
       /* 🌿 Green Slider Bar */
       #year-slider .ui-slider-range {
-        background: #4caf50 !important; /* Green color */
+        background: #819881 !important; /* Green color */
       }
 
       /* 🌿 Circular Flora Icon for Slider Handles */
@@ -72,6 +77,9 @@
     </style>
   </head>
   <body>
+    <nav class="navbar">
+      <div class="logo">Flora the Explorer</div>
+  </nav>
     <div id="map"></div>
 
     <!-- Timeline Slider -->
