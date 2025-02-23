@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flora the Explorer</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+    />
+
+    <style>
+      #map {
+        height: 600px;
+        width: 100%;
+      }
+      #slider-container {
+        width: 80%;
+        margin: 20px auto;
+        text-align: center;
+      }
+      #year-range {
+        margin-top: 10px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Flora the Explorer</h1>
+    <div id="map"></div>
+
+    <!-- Timeline Slider -->
+    <div id="slider-container">
+      <p id="year-range">
+        Year Range: <span id="start-year">1800</span> -
+        <span id="end-year">2024</span>
+      </p>
+      <div id="year-slider"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- jQuery & jQuery UI (for Slider) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- PapaParse for CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <script>
+      var map = L.map("map").setView([20, 0], 2);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      // CSV URLs
+      var googleSheetsCsv =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTViltvCJg8TywJBukt7W3dYZG0G2HBdylAA7VuG1bJOAxuM23gJxIRt8RiZif5-IAK7YoecFvFYjOR/pub?output=csv";
+      var localCsv = "NA_occurence.csv";
+
+      var plantIcon = L.icon({
+        iconUrl: "flora.png",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      var allPlantData = [];
+      var plantMarkers = L.layerGroup().addTo(map);
+
+      function processData(data) {
+        data.forEach((row) => {
+          let lat = parseFloat(row.decimalLatitude);
+          let lon = parseFloat(row.decimalLongitude);
+          let plantName = row.scientificName || "Unknown Plant";
+          let year = parseInt(row.year);
+
+          if (!isNaN(lat) && !isNaN(lon) && !isNaN(year)) {
+            allPlantData.push({ lat, lon, plantName, year });
+          }
+        });
+        updateMarkers();
+      }
+
+      Papa.parse(googleSheetsCsv, {
+        download: true,
+        header: true,
+        complete: function (results) {
+          processData(results.data);
+        },
+      });
+
+      fetch(localCsv)
+        .then((response) => response.text())
+        .then((csvText) => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+              processData(results.data);
+            },
+          });
+        })
+        .catch((error) => console.error("Error loading local CSV:", error));
+
+      function updateMarkers() {
+        plantMarkers.clearLayers();
+        let startYear = $("#year-slider").slider("values", 0);
+        let endYear = $("#year-slider").slider("values", 1);
+
+        allPlantData.forEach((plant) => {
+          if (plant.year >= startYear && plant.year <= endYear) {
+            let marker = L.marker([plant.lat, plant.lon], {
+              icon: plantIcon,
+            }).bindPopup(
+              `<b>${plant.plantName}</b><br>Year: ${plant.year}<br>Located at: ${plant.lat}, ${plant.lon}`
+            );
+            plantMarkers.addLayer(marker);
+          }
+        });
+      }
+
+      $(function () {
+        $("#year-slider").slider({
+          range: true,
+          min: 1800,
+          max: new Date().getFullYear(),
+          values: [1800, new Date().getFullYear()],
+          slide: function (event, ui) {
+            $("#start-year").text(ui.values[0]);
+            $("#end-year").text(ui.values[1]);
+            updateMarkers();
+          },
+        });
+      });
+    </script>
+  </body>
+</html>
