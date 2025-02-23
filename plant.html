@@ -26,17 +26,59 @@
         margin-top: 10px;
         font-size: 16px;
       }
+      /* 🌿 Green Slider Bar */
+      /* 🌿 Green Slider Bar */
+      #year-slider .ui-slider-range {
+        background: #4caf50 !important; /* Green color */
+      }
+
+      /* 🌿 Circular Flora Icon for Slider Handles */
+      #year-slider .ui-slider-handle {
+        width: 40px; /* Adjust icon size */
+        height: 40px;
+        background-image: url("flora.png"); /* Replace with Flora icon */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 50%; /* Makes it a perfect circle */
+        border: 2px solid white; /* Optional: Adds a white outline */
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional: Adds a slight shadow */
+        outline: none;
+        cursor: pointer;
+        transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+      }
+
+      /* 🌟 Make Flora icon yellow when pressed */
+      #year-slider .ui-slider-handle:active {
+        filter: brightness(1.2); /* Slightly brightens the icon */
+        border: 2px solid yellow !important; /* Yellow border when clicked */
+        box-shadow: 0px 0px 10px yellow !important; /* Adds a glowing yellow effect */
+        transform: scale(1.1); /* Slightly enlarges icon for feedback */
+      }
+
+      .leaflet-popup-content-wrapper {
+        background: #fff; /* White background */
+        border-radius: 10px; /* Rounded corners */
+        padding: 5px; /* Less padding for a smaller look */
+        font-size: 12px; /* Smaller font */
+        font-family: "Arial", sans-serif;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Style the arrow/tail of the speech bubble */
+      .leaflet-popup-tip {
+        background: #fff;
+      }
     </style>
   </head>
   <body>
-    <h1>Flora the Explorer</h1>
     <div id="map"></div>
 
     <!-- Timeline Slider -->
     <div id="slider-container">
       <p id="year-range">
         Year Range: <span id="start-year">1800</span> -
-        <span id="end-year">2024</span>
+        <span id="end-year">2025</span>
       </p>
       <div id="year-slider"></div>
     </div>
@@ -48,6 +90,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- PapaParse for CSV Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- AI Chatbot -->
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-embedded-agent.js"></script>
 
     <script>
       var map = L.map("map").setView([20, 0], 2);
@@ -57,19 +101,25 @@
       }).addTo(map);
 
       // CSV URLs
-      var googleSheetsCsv =
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTViltvCJg8TywJBukt7W3dYZG0G2HBdylAA7VuG1bJOAxuM23gJxIRt8RiZif5-IAK7YoecFvFYjOR/pub?output=csv";
-      var localCsv = "NA_occurence.csv";
+      var csvFiles = [
+        "trimmed_asia.csv", // Asia
+        "trimmed_SA.csv", // South America
+        "trimmed_Oceania.csv", // Oceania
+        "trimmed_NA.csv", // North America
+        "trimmed_Africa.csv", // Africa
+        "trimmed_USA.csv", // USA
+      ];
 
       var plantIcon = L.icon({
         iconUrl: "flora.png",
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
+        iconSize: [15, 15],
+        iconAnchor: [7, 7],
       });
 
       var allPlantData = [];
       var plantMarkers = L.layerGroup().addTo(map);
 
+      // Function to Process Data and Add to Global List
       function processData(data) {
         data.forEach((row) => {
           let lat = parseFloat(row.decimalLatitude);
@@ -81,30 +131,35 @@
             allPlantData.push({ lat, lon, plantName, year });
           }
         });
-        updateMarkers();
+        updateMarkers(); // Refresh the map markers
       }
 
-      Papa.parse(googleSheetsCsv, {
-        download: true,
-        header: true,
-        complete: function (results) {
-          processData(results.data);
-        },
-      });
-
-      fetch(localCsv)
-        .then((response) => response.text())
-        .then((csvText) => {
-          Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true,
-            complete: function (results) {
-              processData(results.data);
-            },
+      // Function to Load Multiple CSVs in Parallel
+      function loadCSVs() {
+        let csvPromises = csvFiles.map((url) => {
+          return new Promise((resolve, reject) => {
+            Papa.parse(url, {
+              download: true,
+              header: true,
+              complete: function (results) {
+                processData(results.data);
+                resolve();
+              },
+              error: function (err) {
+                console.error("Error loading CSV:", url, err);
+                reject(err);
+              },
+            });
           });
-        })
-        .catch((error) => console.error("Error loading local CSV:", error));
+        });
 
+        // Wait for all CSVs to finish loading
+        Promise.all(csvPromises)
+          .then(() => console.log("All CSVs loaded successfully"))
+          .catch(() => console.log("Some CSVs failed to load"));
+      }
+
+      // Function to Update Markers Based on Year Range
       function updateMarkers() {
         plantMarkers.clearLayers();
         let startYear = $("#year-slider").slider("values", 0);
@@ -115,13 +170,60 @@
             let marker = L.marker([plant.lat, plant.lon], {
               icon: plantIcon,
             }).bindPopup(
-              `<b>${plant.plantName}</b><br>Year: ${plant.year}<br>Located at: ${plant.lat}, ${plant.lon}`
+              `<div style="text-align: left; max-width: 150px; position: relative;">
+        <div style="display: flex; align-items: center;">
+            <img src="flora.png" style="width: 20px; height: 20px; margin-right: 5px;" alt="Flora Icon">
+            <b>Flora says...</b>
+        </div>
+        <hr style="margin: 5px 0;">
+        <b>Name:</b> ${plant.plantName} <br> <!-- Now only "Name:" is bold -->
+        <button onclick="learnMore('${plant.plantName}')" 
+            style="margin-top:5px; padding:5px 10px; font-size:12px; 
+                   background-color:#4CAF50; color:white; border:none; 
+                   border-radius:5px; cursor:pointer;">
+            Learn More
+        </button>
+    </div>`,
+              {
+                closeButton: false,
+                offset: L.point(0, -10), // Adjust popup positioning slightly
+              }
             );
             plantMarkers.addLayer(marker);
           }
         });
       }
 
+      function learnMore(plantName) {
+        // Redirect to a new page, passing the plant name as a query parameter
+        window.location.href =
+          "learn_more.html?plant=" + encodeURIComponent(plantName);
+      }
+
+      window.addEventListener("DOMContentLoaded", function () {
+        window.AgentInitializer.init({
+          agentRenderURL:
+            "https://agent.jotform.com/01952f7df5327c8b95a4fb2a62439e48ca56",
+          rootId: "JotformAgent-01952f7df5327c8b95a4fb2a62439e48ca56",
+          formID: "01952f7df5327c8b95a4fb2a62439e48ca56",
+          queryParams: ["skipWelcome=1", "maximizable=1"],
+          domain: "https://www.jotform.com",
+          isDraggable: false,
+          background: "linear-gradient(180deg, #adc397 0%, #9ee041 100%)",
+          buttonBackgroundColor: "#417505",
+          buttonIconColor: "#b8e986",
+          variant: false,
+          customizations: {
+            greeting: "Yes",
+            greetingMessage: "Hi my name is Flora! How can I assist you?",
+            pulse: "Yes",
+            position: "right",
+          },
+          isVoice: false,
+        });
+      });
+
+      // Initialize Year Slider (1800 - Present)
       $(function () {
         $("#year-slider").slider({
           range: true,
@@ -135,6 +237,9 @@
           },
         });
       });
+
+      // Load CSVs on Page Load
+      loadCSVs();
     </script>
   </body>
 </html>
