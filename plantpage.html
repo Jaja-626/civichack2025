@@ -1,50 +1,173 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plant Info</title>
-    <link rel="stylesheet" href="plantpage.css">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo">Flora the Explorer</div>
-            <a class="link" href="index">Home</a>
-    </nav>
-
-    <div class="container1">
-        
-        <div class="left">
-            <h1>Plant Name</h1>
-
-            <div class="stack">
-                <div class="card">
-                    <div class="image"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="right">
-            <div class="oval"></div>
-            <div class="info-box"></div>
-        </div>
-    </div>
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Plant Info</title>
+   <link rel="stylesheet" href="plantpage.css" />
+   <!-- Include PapaParse Library -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+ </head>
+ <body>
+   <nav class="navbar">
+     <div class="logo">Flora the Explorer</div>
+     <a class="link" href="plant.html">Home</a>
+   </nav>
 
 
-    <div class="container2">
-        
-        <div class="left">
-            <h1>Plant Name</h1>
+   <div class="container1">
+     <div class="left">
+       <h1>Loading...</h1>
+       <div class="stack">
+         <div class="card">
+           <div class="image"></div>
+           <!-- Image will be loaded dynamically -->
+         </div>
+       </div>
+     </div>
+     <div class="right">
+       <div class="info-box"></div>
+       <!-- Plant details will be inserted here -->
+     </div>
+   </div>
 
-            <div class="stack">
-                <div class="card">
-                    <div class="image"></div>
-                </div>
-            </div>
-        </div>
 
-        
-    </div>
+   <script>
+     // Function to get query parameters from URL
+     function getQueryParameter(name) {
+       const urlParams = new URLSearchParams(window.location.search);
+       return urlParams.get(name);
+     }
 
-</body>
+
+     // Get the plant name from the URL
+     const plantName = getQueryParameter("plant");
+
+
+     // Update the page title and main heading
+     if (plantName) {
+       document.title = plantName + " - Plant Info";
+       document
+         .querySelectorAll("h1")
+         .forEach((el) => (el.textContent = plantName));
+     }
+
+
+     // Function to fetch plant details from CSV files
+     function fetchPlantData() {
+       const csvFiles = [
+         "trimmed_asia.csv",
+         "trimmed_SA.csv",
+         "trimmed_Oceania.csv",
+         "trimmed_NA.csv",
+         "trimmed_Africa.csv",
+         "trimmed_USA.csv",
+       ];
+
+
+       let foundPlant = null;
+
+
+       const csvPromises = csvFiles.map((url) => {
+         return new Promise((resolve, reject) => {
+           Papa.parse(url, {
+             download: true,
+             header: true,
+             complete: function (results) {
+               results.data.forEach((row) => {
+                 // Use case-insensitive comparison after trimming spaces
+                 if (
+                   row.scientificName &&
+                   row.scientificName.trim().toLowerCase() ===
+                     plantName.trim().toLowerCase()
+                 ) {
+                   foundPlant = row;
+                 }
+               });
+               resolve();
+             },
+             error: function (err) {
+               console.error("Error loading CSV:", url, err);
+               reject(err);
+             },
+           });
+         });
+       });
+
+
+       // Wait for all CSVs to load before updating the page
+       Promise.all(csvPromises).then(() => {
+         if (foundPlant) {
+           displayPlantInfo(foundPlant);
+         } else {
+           document.querySelector(
+             ".info-box"
+           ).innerHTML = `<p>Plant information not found.</p>`;
+         }
+       });
+     }
+
+
+     // Function to display the plant data
+     function displayPlantInfo(plant) {
+       console.log("Found Plant Data:", plant); // Debugging
+
+
+       // Insert primary plant details in the first green box
+       document.querySelector(".info-box").innerHTML = `
+           <h2 class="section-title">🌿 Plant Details</h2>
+           <p><strong>Scientific Name:</strong> ${plant.scientificName}</p>
+           <p><strong>Family:</strong> ${plant.family || "Unknown"}</p>
+           <p><strong>Year Recorded:</strong> ${plant.year || "Unknown"}</p>
+           <p><strong>Location:</strong> (${plant.decimalLatitude}, ${
+         plant.decimalLongitude
+       })</p>
+       `;
+
+
+       // Extract Genus, Country, and Year
+       let genus = plant.genus || "Unknown";
+       let country = plant.country || "Unknown";
+       let year = plant.year || "Unknown";
+       let plantImage = plant.references || "Unknown";
+
+
+       // Create a second well-styled green box for Plant Info
+       let plantInfoBox = document.createElement("div");
+       plantInfoBox.classList.add("plant-info-box"); // Add styling class
+       plantInfoBox.innerHTML = `
+           <h2 class="section-title">🌱 Plant Info</h2>
+           <div class="info-grid">
+               <div><strong>Genus:</strong> ${genus}</div>
+               <div><strong>Country:</strong> ${country}</div>
+               <div><strong>Year Discovered:</strong> ${year}</div>
+           </div>
+       `;
+
+
+       // Append this box inside the right container
+       document.querySelector(".right").appendChild(plantInfoBox);
+
+
+       // Extract and set image URL
+       let imageUrl =
+         plant.references && plant.references.includes("s3.amazonaws.com")
+           ? plant.references.trim()
+           : "http://data.huh.harvard.edu/41d63a5d-35d5-48d7-99d9-280fddaa5204/image"; // Default image
+
+
+       // Insert image inside the .image div
+       document.querySelector(".image").innerHTML = `
+           <img src="${imageUrl}" alt="${plant.scientificName}"
+                class="plant-image">
+       `;
+     }
+
+
+     // Load plant data on page load
+     window.onload = fetchPlantData;
+   </script>
+ </body>
 </html>
+
+

@@ -7,18 +7,23 @@
     color: white;
 }
 
+
 .logo{
-    font-size:30px; 
+    font-size:30px;
 }
+
 
 .link{
     text-decoration: none;
     color:white;
 }
 
+
 h1{
     margin-left:95px;
 }
+
+
 
 
 .container1 {
@@ -39,6 +44,7 @@ h1{
     gap:200px;
 }
 
+
 .left {
     position: relative;
 }
@@ -58,14 +64,13 @@ h1{
 
 .stack{
     width: 350px;
-    height: 450px;
+    height: 500px;
     background-color: #819881;
 }
 
 .right {
     text-align: center;
 }
-
 
 .info-box{
     background-color:#819881;
@@ -79,6 +84,7 @@ h1{
     font-size: 14px;
 }
 
+
 .oval {
     width: 400px;
     height: 100px;
@@ -87,4 +93,36 @@ h1{
     margin-bottom: 30px;
     margin-top:80px;
     margin-left:5px;
+}
+
+
+.plant-info-box {
+    background-color: #c7e6b7; /* Light green background */
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.plant-info-box h3 {
+    color: #2c6e49;
+    text-align: center;
+}
+
+.image {
+    width: 100%; /* Ensures it takes the full width of its parent container */
+    height: 250px; /* Set a fixed height for consistency */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Prevents image overflow */
+    border-radius: 10px; /* Optional: Rounded corners for aesthetics */
+    background-color: #f4f4f4; /* Light background for better visibility */
+}
+
+.plant-image {
+    width: 100%; /* Makes sure the image stretches horizontally */
+    height: 100%; /* Makes sure the image stretches vertically */
+    object-fit: cover; /* Ensures the image fills the box without distortion */
+    border-radius: 10px; /* Optional: Keeps the image corners rounded */
 }
