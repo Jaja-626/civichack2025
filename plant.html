@@ -208,6 +208,32 @@
           "learn_more.html?plant=" + encodeURIComponent(plantName);
       }
 
+      window.addEventListener("DOMContentLoaded", function() {
+    window.AgentInitializer.init({
+      agentRenderURL: "https://agent.jotform.com/0195335b49e07e0c996ca6376ab3b3b81bc0",
+      rootId: "JotformAgent-0195335b49e07e0c996ca6376ab3b3b81bc0",
+      formID: "0195335b49e07e0c996ca6376ab3b3b81bc0",
+      queryParams: ["skipWelcome=1", "maximizable=1"],
+      domain: "https://www.jotform.com",
+      isDraggable: false,
+      background: "linear-gradient(180deg, #d4e9ab 0%, #d6d61d 100%)",
+      buttonBackgroundColor: "#004BB6",
+      buttonIconColor: "#F8FEEC",
+      variant: false,
+      customizations: {
+        "greeting": "Yes",
+        "greetingMessage": "Hi! Interested in learning more about plants? Feel free to ask!.",
+        "openByDefault": "No",
+        "pulse": "Yes",
+        "position": "right",
+        "autoOpenChatIn": "0"
+      },
+      isVoice: false
+    });
+  });
+
+
+      /*
       window.addEventListener("DOMContentLoaded", function () {
         window.AgentInitializer.init({
           agentRenderURL:
@@ -230,6 +256,7 @@
           isVoice: false,
         });
       });
+      */
 
       // Initialize Year Slider (1800 - Present)
       $(function () {
